@@ -1,0 +1,23 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;height:100%;overflow:hidden;background:#556}</style>
+<script type="importmap">{"imports":{"three":"../vendor/three-r170/three.module.min.js","three/addons/":"../vendor/three-r170/addons/"}}</script></head><body>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+const r = new THREE.WebGLRenderer({ antialias: true }); r.setSize(innerWidth, innerHeight); document.body.appendChild(r.domElement);
+r.toneMapping = THREE.ACESFilmicToneMapping;
+const scene = new THREE.Scene(); const cam = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.01, 100);
+const hdr = await new RGBELoader().loadAsync('assets/hdri/wasteland_clouds_puresky_2k.hdr'); hdr.mapping = THREE.EquirectangularReflectionMapping;
+scene.environment = new THREE.PMREMGenerator(r).fromEquirectangular(hdr).texture; scene.background = new THREE.Color(0x556070);
+scene.add(new THREE.DirectionalLight(0xffffff, 2).translateX(1).translateY(2));
+const out = {};
+for (const n of ['ak47', 'shotgun', 'soldier', 'fox', 'muzzle_flash']) {
+  const g = await new GLTFLoader().loadAsync('assets/models/' + n + '.glb');
+  const bb = new THREE.Box3().setFromObject(g.scene);
+  const bones = []; g.scene.traverse((o) => { if (o.isBone) bones.push(o.name); });
+  out[n] = { min: bb.min.toArray().map((v) => +v.toFixed(3)), max: bb.max.toArray().map((v) => +v.toFixed(3)), anims: g.animations.map((a) => a.name + ':' + a.duration.toFixed(2)), bones: bones.slice(0, 60).join(','), kids: g.scene.children.map((c) => c.type + ':' + c.name + ' s=' + c.scale.toArray().map((v)=>+v.toFixed(3)) + ' r=' + c.rotation.toArray().slice(0,3).map((v)=>+v.toFixed(2))) };
+  window['g_' + n] = g;
+}
+window.__out = out; window.__r = r; window.__scene = scene; window.__cam = cam; window.THREE = THREE;
+window.__ready = true;
+</script></body></html>

@@ -8,10 +8,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap">
   <link rel="stylesheet" href="style.css">
+  <script type="importmap">{"imports":{"three":"../vendor/three-r170/three.module.min.js","three/addons/":"../vendor/three-r170/addons/"}}</script>
 </head>
 <body>
   <div id="stage"></div>
-  <canvas id="grain" width="160" height="160"></canvas>
   <div id="vignette"></div>
   <div id="hurt"></div>
   <div id="radfx"></div>
@@ -83,10 +83,10 @@
       </div>
       <div class="keys">
         <span><kbd>WASD</kbd> движение</span><span><kbd>Shift</kbd> бег</span><span><kbd>Ctrl</kbd>/<kbd>C</kbd> присесть</span><span><kbd>Пробел</kbd> прыжок</span>
-        <span><kbd>ЛКМ</kbd> огонь</span><span><kbd>ПКМ</kbd> прицел</span><span><kbd>R</kbd> перезарядка</span><span><kbd>1 2 3</kbd> оружие</span>
+        <span><kbd>ЛКМ</kbd> огонь</span><span><kbd>ПКМ</kbd> прицел</span><span><kbd>R</kbd> перезарядка</span><span><kbd>1 2</kbd> оружие, <kbd>V</kbd> приклад</span>
         <span><kbd>E</kbd> взаимодействие</span><span><kbd>G</kbd> бросить болт</span><span><kbd>F</kbd> фонарик</span><span><kbd>Tab</kbd> КПК</span>
       </div>
-      <p class="hint" id="loadingNote">Загрузка мира…</p>
+      <div class="quality"><span>Графика:</span><span id="qualitySel"><button data-q="low">Низкая</button><button data-q="mid">Средняя</button><button data-q="high">Высокая</button></span></div>
       <a href="../" class="back">← на главную</a>
     </div>
   </section>
@@ -103,9 +103,12 @@
     </div>
   </section>
 
-  <script src="../vendor/three.min.js"></script>
+  <section id="loading" class="screen loading">
+    <div class="menu small"><h2>ЗОНА</h2><p id="loadingNote">Загрузка…</p><div class="loadbar"><i id="loadBar"></i></div>
+      <p class="hint">Первый запуск скачивает ~25 МБ моделей и фактур и строит лес. Это может занять до минуты.</p></div>
+  </section>
   <script src="js/util.js"></script>
-  <script src="js/world.js"></script>
-  <script src="js/game.js"></script>
+  <script src="js/layout.js"></script>
+  <script type="module" src="js/game3.js"></script>
 </body>
 </html>

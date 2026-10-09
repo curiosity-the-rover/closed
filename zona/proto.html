@@ -1,0 +1,46 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><title>Зона — прототип рендера</title>
+<style>html,body{margin:0;height:100%;overflow:hidden;background:#222}#st{position:fixed;inset:0}#log{position:fixed;left:8px;top:8px;color:#fff;font:12px monospace;background:rgba(0,0,0,.5);padding:4px}</style>
+<script type="importmap">{"imports":{"three":"../vendor/three-r170/three.module.min.js","three/addons/":"../vendor/three-r170/addons/"}}</script>
+</head><body><div id="st"></div><div id="log">загрузка…</div>
+<script src="js/util.js"></script><script src="js/layout.js"></script>
+<script type="module">
+import * as THREE from 'three';
+import { loadAll, A } from './js/assets.js';
+import { buildWorld } from './js/world3.js';
+import { createRenderer, setupScene, createComposer } from './js/render.js';
+import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
+const q = new URLSearchParams(location.search).get('q') || 'high';
+const log = (t) => document.getElementById('log').textContent = t;
+const t0 = performance.now();
+await loadAll((p) => log('ассеты ' + Math.round(p * 100) + '%'));
+const renderer = createRenderer(document.getElementById('st'), q);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.05, 900);
+renderer.setSize(innerWidth, innerHeight);
+const L = setupScene(scene, renderer, q);
+log('мир…');
+const W = await buildWorld(scene, renderer, { quality: q });
+const { composer, grade } = createComposer(renderer, scene, camera, q);
+// пара персонажей для проверки
+const mixers = [];
+function spawn(name, x, z, ry, anim, scale = 1, tint) {
+  const g = SkeletonUtils.clone(A.models[name].scene); g.position.set(x, Z.heightAt(x, z), z); g.rotation.y = ry; g.scale.setScalar(scale);
+  g.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; if (tint) { o.material = o.material.clone(); o.material.color.multiply(new THREE.Color(tint)); } } });
+  scene.add(g); const mx = new THREE.AnimationMixer(g); const clip = A.models[name].animations.find((a) => a.name === anim) || A.models[name].animations[0]; mx.clipAction(clip).play(); mixers.push(mx);
+}
+window.__proto = { scene, camera, W, renderer, composer, spawn, L, THREE, grade, mixers };
+log('готово за ' + ((performance.now() - t0) / 1000).toFixed(1) + ' c');
+window.__pause = true; window.__ready = true;
+let last = performance.now();
+function step(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now; const t = now / 1000;
+  mixers.forEach((m) => m.update(dt));
+  L.sun.position.copy(camera.position).addScaledVector(L.sunDir, 120); L.sun.target.position.copy(camera.position);
+  W.updateTrees(camera.position, t); W.updateGrass(camera.position, t); W.treeTime(t); W.updaters.forEach((f) => f(t));
+  grade.uniforms.uTime.value = t;
+  composer.render();
+}
+window.__step = step;
+function frame(now) { requestAnimationFrame(frame); if (!window.__pause) step(now); }
+requestAnimationFrame(frame);
+</script></body></html>
