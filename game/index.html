@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <title>Стоп-кадр</title>
+  <meta name="description" content="3D-шутер от первого лица: время движется, только когда движешься ты. Катана, пистолет, дробовик, автомат.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="stage"></div>
+
+  <!-- HUD -->
+  <div id="hud" hidden>
+    <div class="crosshair"></div>
+    <div class="hud-top">
+      <span id="hudLevel">Уровень 1</span>
+      <span id="hudEnemies">Врагов: 0</span>
+    </div>
+    <div class="hud-time"><div class="time-label">ВРЕМЯ</div><div class="time-bar"><i id="timeFill"></i></div></div>
+    <div class="hud-weapon"><b id="hudWeapon">Кулаки</b><span id="hudAmmo"></span></div>
+    <div id="hint" class="hint"></div>
+    <div id="prompt" class="prompt" hidden>E — взять</div>
+  </div>
+
+  <!-- Сенсорное управление -->
+  <div id="touch" hidden>
+    <div id="stick" class="stick"><i></i></div>
+    <button id="tFire" class="tbtn fire">Огонь</button>
+    <button id="tThrow" class="tbtn throw">Бросок</button>
+    <button id="tPick" class="tbtn pick">Взять</button>
+  </div>
+
+  <div id="flash" class="flash"></div>
+  <div id="words" class="words"></div>
+
+  <!-- Экраны -->
+  <section id="menu" class="screen">
+    <div class="panel">
+      <h1><span>СТОП</span><span>КАДР</span></h1>
+      <p class="tag">Время движется, только когда движешься ты.</p>
+      <button id="btnPlay" class="btn primary">Играть</button>
+      <div id="levels" class="levels"></div>
+      <div class="controls">
+        <div><kbd>W A S D</kbd> идти</div>
+        <div><kbd>Мышь</kbd> смотреть</div>
+        <div><kbd>ЛКМ</kbd> стрелять / удар</div>
+        <div><kbd>ПКМ</kbd> или <kbd>Q</kbd> бросить оружие</div>
+        <div><kbd>E</kbd> подобрать</div>
+        <div><kbd>R</kbd> заново, <kbd>Esc</kbd> пауза</div>
+      </div>
+      <p class="note">Одно попадание — и ты мёртв. Пули летят медленно: от них можно уйти, а катаной — разрубить. Брошенное оружие обезоруживает врага.</p>
+      <a class="back" href="../">← Калькулятор Васту</a>
+    </div>
+  </section>
+
+  <section id="over" class="screen" hidden>
+    <div class="panel small">
+      <h2 id="overTitle">Ты мёртв</h2>
+      <p id="overText">Попробуй ещё раз.</p>
+      <div class="row">
+        <button id="btnRetry" class="btn primary">Заново (R)</button>
+        <button id="btnMenu" class="btn">Меню</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="pause" class="screen" hidden>
+    <div class="panel small">
+      <h2>Пауза</h2>
+      <div class="row">
+        <button id="btnResume" class="btn primary">Продолжить</button>
+        <button id="btnRestart" class="btn">Заново</button>
+        <button id="btnMenu2" class="btn">Меню</button>
+      </div>
+    </div>
+  </section>
+
+  <script src="../vendor/three.min.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
