@@ -214,7 +214,19 @@
   }
 
   // ---------- отчёты
+  // В просмотрщике claude.ai прямые скачивания заблокированы — там файл отдаётся через capability downloads.
+  var claudeDownloads = null;
+  if (window.claude && typeof window.claude.use === 'function') {
+    window.claude.use('downloads').then(function (ns) { claudeDownloads = ns; }, function () {});
+  }
+
   function download(blob, name) {
+    if (claudeDownloads) {
+      claudeDownloads.save({ filename: name, data: blob }).catch(function (e) {
+        if (e && e.code !== 'declined') toast('Не удалось сохранить файл: ' + (e.message || e.code));
+      });
+      return;
+    }
     var a = document.createElement('a');
     a.href = URL.createObjectURL(blob); a.download = name;
     document.body.appendChild(a); a.click();
