@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <title>Зона: Окраина</title>
+  <meta name="description" content="Шутер-выживание от первого лица в Зоне отчуждения: аномалии, артефакты, радиация, бандиты, слепые псы, торговец и задания.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="stage"></div>
+  <canvas id="grain" width="160" height="160"></canvas>
+  <div id="vignette"></div>
+  <div id="hurt"></div>
+  <div id="radfx"></div>
+
+  <div id="hud" hidden>
+    <div class="compass"><div id="compassStrip"></div><i class="compass-tick"></i></div>
+    <div id="cross" class="cross"><i></i><i></i><i></i><i></i></div>
+    <div class="bars">
+      <div class="bar hp"><span>Здоровье</span><b><i id="hpFill"></i></b></div>
+      <div class="bar st"><span>Выносливость</span><b><i id="stFill"></i></b></div>
+      <div class="bar rad"><span>☢ Радиация</span><b><i id="radFill"></i></b></div>
+    </div>
+    <div class="weapon"><b id="wName">ПМ</b><span id="wAmmo">8 / 32</span></div>
+    <div class="detector" id="detector"><span>ДЕТЕКТОР</span><div class="leds"><i></i><i></i><i></i><i></i><i></i></div><em id="detDist">—</em></div>
+    <div id="anomWarn" class="anom-warn" hidden>⚠ Аномалия рядом</div>
+    <div id="prompt" class="prompt" hidden></div>
+    <div id="notes" class="notes"></div>
+    <div class="quick">[H] аптечка <b id="qMed">0</b> · [B] бинт <b id="qBand">0</b> · [G] болт · [F] фонарь · [Tab] КПК</div>
+  </div>
+
+  <div id="touch" hidden>
+    <div id="stick" class="stick"><i></i></div>
+    <button class="tb" data-act="fire" style="right:24px;bottom:120px;width:84px;height:84px">Огонь</button>
+    <button class="tb" data-act="aim" style="right:122px;bottom:150px">Прицел</button>
+    <button class="tb" data-act="jump" style="right:120px;bottom:62px">Прыжок</button>
+    <button class="tb" data-act="use" style="right:30px;bottom:222px">Взять</button>
+    <button class="tb" data-act="reload" style="right:124px;bottom:238px">Перезар.</button>
+    <button class="tb" data-act="bolt" style="right:200px;bottom:100px">Болт</button>
+    <button class="tb small" data-act="pda" style="right:16px;top:64px">КПК</button>
+    <button class="tb small" data-act="weapon" style="right:16px;top:116px">Оружие</button>
+    <button class="tb small" data-act="heal" style="right:16px;top:168px">Аптечка</button>
+  </div>
+
+  <!-- КПК -->
+  <section id="pda" class="overlay" hidden>
+    <div class="pda">
+      <header><b>КПК</b><nav><button data-tab="quests" class="on">Задания</button><button data-tab="inv">Инвентарь</button><button data-tab="map">Карта</button></nav><button class="x" data-close>✕</button></header>
+      <div class="pda-body">
+        <div data-pane="quests"><ul id="questList" class="qlist"></ul></div>
+        <div data-pane="inv" hidden><div id="invList" class="inv"></div></div>
+        <div data-pane="map" hidden><canvas id="mapCanvas" width="640" height="640"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Торговля / диалог -->
+  <section id="trade" class="overlay" hidden>
+    <div class="trade">
+      <header><b id="tradeTitle">Торговец</b><span id="tradeMoney"></span><button class="x" data-close>✕</button></header>
+      <p id="tradeText" class="say"></p>
+      <div class="cols">
+        <div><h3>Купить</h3><ul id="buyList" class="shop"></ul></div>
+        <div><h3>Продать</h3><ul id="sellList" class="shop"></ul><h3>Задания</h3><ul id="tqList" class="shop"></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="talk" class="overlay" hidden>
+    <div class="talk"><b id="talkName"></b><p id="talkText"></p><button class="btn" data-close>Ладно</button></div>
+  </section>
+
+  <section id="menu" class="screen">
+    <div class="menu">
+      <h1>ЗОНА<small>Окраина</small></h1>
+      <p class="lead">Ты — новичок у кордона Зоны. Торговец в бункере даст работу. Аномалии проверяй болтами, артефакты ищи детектором, от радиации — водка и антирад.</p>
+      <div class="row">
+        <button id="btnNew" class="btn primary">Новая игра</button>
+        <button id="btnLoad" class="btn" hidden>Продолжить</button>
+      </div>
+      <div class="keys">
+        <span><kbd>WASD</kbd> движение</span><span><kbd>Shift</kbd> бег</span><span><kbd>Ctrl</kbd>/<kbd>C</kbd> присесть</span><span><kbd>Пробел</kbd> прыжок</span>
+        <span><kbd>ЛКМ</kbd> огонь</span><span><kbd>ПКМ</kbd> прицел</span><span><kbd>R</kbd> перезарядка</span><span><kbd>1 2 3</kbd> оружие</span>
+        <span><kbd>E</kbd> взаимодействие</span><span><kbd>G</kbd> бросить болт</span><span><kbd>F</kbd> фонарик</span><span><kbd>Tab</kbd> КПК</span>
+      </div>
+      <p class="hint" id="loadingNote">Загрузка мира…</p>
+      <a href="../" class="back">← на главную</a>
+    </div>
+  </section>
+
+  <section id="pause" class="screen" hidden>
+    <div class="menu small"><h2>Пауза</h2>
+      <div class="row"><button id="btnResume" class="btn primary">Продолжить</button><button id="btnSave" class="btn">Сохранить</button><button id="btnToMenu" class="btn">В меню</button></div>
+    </div>
+  </section>
+
+  <section id="dead" class="screen" hidden>
+    <div class="menu small"><h2>Ты погиб</h2><p id="deadText">Зона не прощает ошибок.</p>
+      <div class="row"><button id="btnReload" class="btn primary">Загрузить сохранение</button><button id="btnRestart" class="btn">Новая игра</button></div>
+    </div>
+  </section>
+
+  <script src="../vendor/three.min.js"></script>
+  <script src="js/util.js"></script>
+  <script src="js/world.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
