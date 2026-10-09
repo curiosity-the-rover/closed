@@ -26,7 +26,7 @@ export function setupScene(scene, renderer, quality) {
   const env = pmrem.fromEquirectangular(A.hdr).texture;
   scene.environment = env;
   scene.background = A.hdr;
-  scene.backgroundIntensity = 0.85;
+  scene.backgroundIntensity = 0.72;
   scene.environmentIntensity = 0.75;
   scene.backgroundBlurriness = 0.0;
   // туман цвета горизонта панорамы

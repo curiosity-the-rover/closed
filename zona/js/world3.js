@@ -829,9 +829,9 @@ async function buildVegetation(W, root, renderer, rng, quality) {
 
   // --- камыш
   const reeds = [];
-  for (let i = 0; i < 600; i++) { const a = rng() * 6.28, d = L.POND_R - 6 + rng() * 9; reeds.push([POI.pond.x + Math.cos(a) * d, POI.pond.z + Math.sin(a) * d, 0.9 + rng() * 0.8]); }
-  const reedGeo = new THREE.ConeGeometry(0.018, 1, 4, 1, true).translate(0, 0.5, 0);
-  const reedIm = new THREE.InstancedMesh(reedGeo, new THREE.MeshStandardMaterial({ color: 0x9a9258, roughness: 0.9 }), reeds.length);
-  reeds.forEach(([x, z, hh], i) => { qq.setFromEuler(new THREE.Euler((rng() - .5) * 0.25, 0, (rng() - .5) * 0.25)); ss.set(1, hh * 1.6, 1); pp.set(x, Math.max(Z.pondLevel - 0.3, Z.heightAt(x, z)), z); mtx.compose(pp, qq, ss); reedIm.setMatrixAt(i, mtx); });
+  for (let i = 0; i < 600; i++) { const a = rng() * 6.28, d = L.POND_R - 6 + rng() * 9; reeds.push([POI.pond.x + Math.cos(a) * d, POI.pond.z + Math.sin(a) * d, 0.7 + rng() * 0.6]); }
+  const reedGeo = new THREE.ConeGeometry(0.008, 1, 3, 1, true).translate(0, 0.5, 0);
+  const reedIm = new THREE.InstancedMesh(reedGeo, new THREE.MeshStandardMaterial({ color: 0x5e6238, roughness: 0.9 }), reeds.length);
+  reeds.forEach(([x, z, hh], i) => { qq.setFromEuler(new THREE.Euler((rng() - .5) * 0.25, 0, (rng() - .5) * 0.25)); ss.set(1, hh * 1.3, 1); pp.set(x, Math.max(Z.pondLevel - 0.3, Z.heightAt(x, z)), z); mtx.compose(pp, qq, ss); reedIm.setMatrixAt(i, mtx); });
   root.add(reedIm);
 }
