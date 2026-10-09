@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Калькулятор Васту</title>
+  <meta name="description" content="Калькулятор Васту-шастры для квартир, домов, офисов и магазинов: 16 зон, 32 входа, мандала, Аяди, отчёт в PDF и PowerPoint.">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <svg viewBox="0 0 40 40" class="logo" aria-hidden="true">
+        <rect x="4" y="4" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2"/>
+        <path d="M4 14.7h32M4 25.3h32M14.7 4v32M25.3 4v32" stroke="currentColor" stroke-width="1" opacity=".5"/>
+        <circle cx="20" cy="20" r="4" fill="currentColor"/>
+      </svg>
+      <div>
+        <h1>Калькулятор Васту</h1>
+        <p>Квартира · дом и участок · офис · магазин</p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <select id="exampleSelect" aria-label="Пример"></select>
+      <button id="btnLoadExample" class="btn ghost">Загрузить пример</button>
+      <button id="btnCalc" class="btn primary">▶ Рассчитать</button>
+      <div class="dropdown">
+        <button id="btnReport" class="btn accent">Сформировать отчёт ▾</button>
+        <div class="dropdown-menu" id="reportMenu">
+          <button data-fmt="pdf">📄 PDF-документ</button>
+          <button data-fmt="pptx">📊 PowerPoint (.pptx)</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- Левая панель: исходные данные -->
+    <aside class="panel inputs">
+      <section class="card">
+        <h2>1. Объект</h2>
+        <label>Название <input id="projName" type="text"></label>
+        <label>Тип объекта <select id="objectType"></select></label>
+        <div class="north-row">
+          <label>Верх плана смотрит на (азимут, °)
+            <input id="north" type="number" min="0" max="359" step="1">
+          </label>
+          <input id="northRange" type="range" min="0" max="359" step="1" aria-label="Азимут">
+        </div>
+        <div class="quick-dirs" id="quickNorth">
+          <button data-v="0">С</button><button data-v="45">СВ</button><button data-v="90">В</button><button data-v="135">ЮВ</button>
+          <button data-v="180">Ю</button><button data-v="225">ЮЗ</button><button data-v="270">З</button><button data-v="315">СЗ</button>
+        </div>
+        <p class="hint">Встаньте в центре помещения с компасом и определите, куда «смотрит» верхняя сторона вашего плана.</p>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>2. Помещения</h2>
+          <button id="btnAddRoom" class="btn small">+ Комната</button>
+        </div>
+        <p class="hint">Размеры в метрах. x, y — левый верхний угол на плане. Комнаты можно перетаскивать прямо на плане, а угол ◢ — тянуть.</p>
+        <div class="table-wrap"><table class="grid" id="roomsTable">
+          <thead><tr><th>Тип</th><th>Название</th><th>x</th><th>y</th><th>шир.</th><th>гл.</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table></div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>3. Детали и вход</h2>
+          <button id="btnAddItem" class="btn small">+ Деталь</button>
+        </div>
+        <p class="hint">Вход, плита, кровать, сейф, зеркала… «Направление» — куда смотрит человек / изголовье / дверца, по компасу.</p>
+        <div class="table-wrap"><table class="grid" id="itemsTable">
+          <thead><tr><th>Деталь</th><th>x</th><th>y</th><th>Направление</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table></div>
+      </section>
+
+      <section class="card" id="plotCard">
+        <h2>4. Участок</h2>
+        <div class="plot-grid">
+          <label>Уклон понижается к <select id="plotSlope"></select></label>
+          <label>Водоём рядом <select id="plotWater"></select></label>
+          <label>Высокие здания / холмы <select id="plotTall"></select></label>
+          <label>Вити-шула (дорога в участок) <select id="plotShoola"></select></label>
+          <label>Ед. для Аяди <select id="plotUnit"></select></label>
+        </div>
+        <div class="roads"><span>Дороги вдоль сторон:</span>
+          <label><input type="checkbox" data-road="N"> С</label>
+          <label><input type="checkbox" data-road="E"> В</label>
+          <label><input type="checkbox" data-road="S"> Ю</label>
+          <label><input type="checkbox" data-road="W"> З</label>
+        </div>
+        <label class="check"><input type="checkbox" id="plotOpenNE"> Свободного места на севере и востоке участка больше, чем на юге и западе</label>
+      </section>
+
+      <section class="card">
+        <h2>Проект</h2>
+        <div class="row-btns">
+          <button id="btnSave" class="btn small ghost">💾 Сохранить JSON</button>
+          <label class="btn small ghost file">📂 Открыть JSON<input id="fileOpen" type="file" accept=".json,application/json"></label>
+          <button id="btnClear" class="btn small ghost">Очистить</button>
+        </div>
+      </section>
+    </aside>
+
+    <!-- Центр: визуализация -->
+    <section class="panel stage">
+      <div class="stage-bar">
+        <div class="tabs" role="tablist">
+          <button class="tab active" data-view="2d" role="tab">2D-план</button>
+          <button class="tab" data-view="3d" role="tab">3D-модель</button>
+        </div>
+        <div class="toggles">
+          <label><input type="checkbox" id="tZones" checked> 16 зон</label>
+          <label><input type="checkbox" id="tMandala"> Мандала 9×9</label>
+          <label><input type="checkbox" id="tLabels" checked> Подписи</label>
+          <button id="btnWalk" class="btn small ghost">🚶 Прогулка</button>
+        </div>
+      </div>
+      <div class="view" id="view2d"><svg id="plan" xmlns="http://www.w3.org/2000/svg"></svg></div>
+      <div class="view hidden" id="view3d"><div id="three"></div>
+        <div class="view-hint">Вращайте мышью / пальцем, колесо — масштаб</div></div>
+      <div class="legend">
+        <span><i style="background:#2a9d4b"></i>Отлично</span>
+        <span><i style="background:#6bbf59"></i>Благоприятно</span>
+        <span><i style="background:#e9b949"></i>Нейтрально</span>
+        <span><i style="background:#e76f51"></i>Неблагоприятно</span>
+        <span><i style="background:#c0392b"></i>Сильный дефект</span>
+      </div>
+    </section>
+
+    <!-- Правая панель: результат -->
+    <aside class="panel results">
+      <section class="card score-card">
+        <div class="gauge">
+          <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="50" class="g-bg"/><circle cx="60" cy="60" r="50" class="g-fg" id="gaugeArc"/></svg>
+          <div class="gauge-val"><b id="scoreVal">—</b><span>из 100</span></div>
+        </div>
+        <div>
+          <div class="band" id="bandText">Нажмите «Рассчитать»</div>
+          <div class="mini-stats" id="miniStats"></div>
+        </div>
+      </section>
+      <section class="card">
+        <div class="filter-tabs" id="filterTabs">
+          <button class="active" data-f="all">Все</button>
+          <button data-f="bad">Дефекты</button>
+          <button data-f="good">Сильные стороны</button>
+        </div>
+        <ol class="findings" id="findings"><li class="empty">Здесь появится разбор: каждая комната, вход, предметы, форма плана и участок.</li></ol>
+      </section>
+      <section class="card">
+        <h2>Справочник</h2>
+        <details><summary>16 зон и их значение</summary><ul class="ref" id="refZones"></ul></details>
+        <details><summary>8 сторон света: стихии и цвета</summary><ul class="ref" id="refDirs"></ul></details>
+        <details><summary>Источники и методика</summary><ul class="ref" id="refSources"></ul></details>
+      </section>
+    </aside>
+  </main>
+
+  <div id="toast" class="toast" role="status"></div>
+
+  <script src="vendor/three.min.js"></script>
+  <script src="vendor/OrbitControls.js"></script>
+  <script src="vendor/pdfmake.min.js"></script>
+  <script src="vendor/vfs_fonts.js"></script>
+  <script src="vendor/pptxgen.bundle.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/examples.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/plan2d.js"></script>
+  <script src="js/view3d.js"></script>
+  <script src="js/report.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
