@@ -1111,6 +1111,7 @@ const Z = window.Z;
     POST.composer.render(dt);
   }
   function frame(now) { requestAnimationFrame(frame); if (!window.__zonaPause) step(now); }
+  function sim(dt, n) { for (var i = 0; i < (n || 1); i++) { last += dt * 1000; if (state === 'play' && !uiOpen) { updatePlayer(dt); updateWorld(dt); } } }
 
   indexColliders(); buildMapBase(); buildViewModels();
   progress(1, '');
@@ -1123,5 +1124,5 @@ const Z = window.Z;
   });
   requestAnimationFrame(frame);
 
-  window.__zona = { get P() { return P; }, get NPC() { return NPC; }, get W() { return W; }, get state() { return state; }, start: startGame, shoot: shoot, interact: interact, keys: keys, look: look, damageNPC: damageNPC, openUI: openUI, closeUI: closeUI, throwBolt: throwBolt, completeQuest: completeQuest, step: step, camera: camera, renderer: renderer };
+  window.__zona = { get P() { return P; }, get NPC() { return NPC; }, get W() { return W; }, get state() { return state; }, start: startGame, shoot: shoot, interact: interact, keys: keys, look: look, damageNPC: damageNPC, openUI: openUI, closeUI: closeUI, throwBolt: throwBolt, completeQuest: completeQuest, step: step, sim: sim, camera: camera, renderer: renderer };
 })();
