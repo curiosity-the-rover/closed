@@ -971,7 +971,7 @@ const Z = window.Z;
     var bs = Math.sin(P.bash / 0.6 * Math.PI);
     if (k === 'ak') {
       var h = vw.ak.holder;
-      h.position.set(Z.lerp(0.075, 0.0, a) + sway, Z.lerp(-0.055, -0.012, a) + Math.abs(sway) * 0.6 - P.swap * 0.4 - sprintTilt * 0.03, Z.lerp(0.04, 0.035, a) + P.recoil * 0.035 - bs * 0.12);
+      h.position.set(Z.lerp(0.035, 0.0, a) + sway, Z.lerp(-0.022, -0.006, a) + Math.abs(sway) * 0.6 - P.swap * 0.4 - sprintTilt * 0.03, Z.lerp(0.04, 0.035, a) + P.recoil * 0.035 - bs * 0.12);
       h.rotation.set(P.recoil * 0.05 - sprintTilt * 0.25 + bs * 0.3, sprintTilt * 0.6, sprintTilt * 0.2 - bs * 0.4);
       vw.ak.mixer.update(dt);
     } else {
