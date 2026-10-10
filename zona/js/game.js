@@ -13,7 +13,10 @@ const Z = window.Z;
   var isTouch = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
   var SAVE_KEY = 'zona-okraina-save-v2';
   var EYE = 1.65, CROUCH_EYE = 1.05, R = 0.35;
-  var QKEY = 'zona-quality';
+  var QKEY = 'zona-quality', SKEY = 'zona-settings';
+  var SET = { walk: 1, run: 1, sens: 1, fly: 1 };
+  try { Object.assign(SET, JSON.parse(localStorage.getItem(SKEY) || '{}')); } catch (e) { /* по умолчанию */ }
+  function saveSettings() { try { localStorage.setItem(SKEY, JSON.stringify(SET)); } catch (e) { /* хранилище недоступно */ } }
   var quality = (function () { try { return localStorage.getItem(QKEY) || (isTouch ? 'low' : 'mid'); } catch (e) { return isTouch ? 'low' : 'mid'; } })();
 
   // ---------- загрузка
@@ -815,7 +818,13 @@ const Z = window.Z;
     if (e.code === 'Digit1') setWeapon('ak');
     if (e.code === 'Digit2') setWeapon('shotgun');
     if (e.code === 'KeyV') bash();
-    if (e.code === 'Space' && P.onGround) { P.vy = 4.6; P.onGround = false; P.stamina = Math.max(0, P.stamina - 8); }
+    if (e.code === 'KeyY') { P.fly = !P.fly; P.vy = 0; P.flyGrace = true; note(P.fly ? 'Полёт включён: Пробел — вверх, Ctrl/C — вниз, Shift — быстрее. Y — выключить' : 'Полёт выключен'); }
+    if (e.code === 'BracketLeft' || e.code === 'BracketRight' || e.code === 'Minus' || e.code === 'Equal') {
+      var dv = (e.code === 'BracketRight' || e.code === 'Equal') ? 0.1 : -0.1;
+      SET.walk = Z.clamp(Math.round((SET.walk + dv) * 100) / 100, 0.4, 2.5); SET.run = Z.clamp(Math.round((SET.run + dv) * 100) / 100, 0.4, 2.5);
+      saveSettings(); syncSettings(); note('Скорость: ходьба ×' + SET.walk.toFixed(1) + ', бег ×' + SET.run.toFixed(1));
+    }
+    if (e.code === 'Space' && P.onGround && !P.fly) { P.vy = 4.6; P.onGround = false; P.stamina = Math.max(0, P.stamina - 8); }
   });
   document.addEventListener('keyup', function (e) { keys[e.code] = false; });
   renderer.domElement.addEventListener('mousedown', function (e) {
@@ -855,12 +864,13 @@ const Z = window.Z;
       b.addEventListener('touchstart', function (e) {
         e.preventDefault(); if (state !== 'play') return;
         var a = b.dataset.act;
-        if (a === 'fire') { mouse = true; shoot(); } if (a === 'aim') P.aiming = !P.aiming; if (a === 'jump' && P.onGround) { P.vy = 4.6; P.onGround = false; }
+        if (a === 'fire') { mouse = true; shoot(); } if (a === 'aim') P.aiming = !P.aiming; if (a === 'jump') { if (P.fly) tMove.up = true; else if (P.onGround) { P.vy = 4.6; P.onGround = false; } }
         if (a === 'use') interact(); if (a === 'reload') reload(); if (a === 'bolt') throwBolt(); if (a === 'pda') { if (uiOpen === 'pda') closeUI(); else openUI('pda'); }
         if (a === 'heal') useItem('medkit');
+        if (a === 'fly') { P.fly = !P.fly; P.vy = 0; note(P.fly ? 'Полёт: «Прыжок» — вверх' : 'Полёт выключен'); }
         if (a === 'weapon') setWeapon(P.cur === 'ak' && P.weapons.shotgun ? 'shotgun' : 'ak');
       }, { passive: false });
-      b.addEventListener('touchend', function (e) { e.preventDefault(); if (b.dataset.act === 'fire') mouse = false; }, { passive: false });
+      b.addEventListener('touchend', function (e) { e.preventDefault(); if (b.dataset.act === 'fire') mouse = false; if (b.dataset.act === 'jump') tMove.up = false; }, { passive: false });
     });
   })();
 
@@ -920,16 +930,28 @@ const Z = window.Z;
   var tmp = new THREE.Vector3(), saveT = 0, ambT = 5, detT = 0, geigerAcc = 0, hudT = 0;
   function updatePlayer(dt) {
     // взгляд
-    var sens = 0.0021 * (1 - P.aim * 0.4);
+    var sens = 0.0021 * SET.sens * (1 - P.aim * 0.4);
     P.yaw -= look.x * sens; P.pitch -= look.y * sens; look.x = look.y = 0;
     P.pitch = Z.clamp(P.pitch, -1.45, 1.45);
     // движение
     var fx = (keys.KeyD ? 1 : 0) - (keys.KeyA ? 1 : 0) + tMove.x, fz = (keys.KeyS ? 1 : 0) - (keys.KeyW ? 1 : 0) + tMove.y;
     var mag = Math.min(1, Math.hypot(fx, fz));
+    if (P.fly) {
+      // полёт: движение по направлению взгляда, Пробел — вверх, Ctrl/C — вниз, Shift — быстрее
+      var fs = 9 * SET.fly * ((keys.ShiftLeft || keys.ShiftRight) ? 2.5 : 1);
+      var fwd = new THREE.Vector3(0, 0, -1).applyEuler(camera.rotation), rgt = new THREE.Vector3(1, 0, 0).applyEuler(camera.rotation);
+      var mv = new THREE.Vector3().addScaledVector(fwd, -fz).addScaledVector(rgt, fx);
+      mv.y += ((keys.Space || tMove.up ? 1 : 0) - (keys.ControlLeft || keys.KeyC ? 1 : 0));
+      if (mv.lengthSq() > 1) mv.normalize();
+      P.pos.addScaledVector(mv, fs * dt);
+      P.pos.x = Z.clamp(P.pos.x, -150, 150); P.pos.z = Z.clamp(P.pos.z, -150, 150);
+      P.pos.y = Z.clamp(P.pos.y, Z.heightAt(P.pos.x, P.pos.z), 220);
+      P.vy = 0; P.onGround = false; P.moving = mv.lengthSq() > 0.01; P.sprint = false; P.crouch = 0;
+    } else {
     P.crouch = Z.lerp(P.crouch, keys.ControlLeft || keys.KeyC ? 1 : 0, Math.min(1, dt * 10));
     var inWater = P.pos.y < Z.pondLevel - 0.2;
     P.sprint = (keys.ShiftLeft || keys.ShiftRight) && fz < 0 && P.stamina > 5 && P.crouch < 0.5 && !P.aiming;
-    var speed = (P.sprint ? 6.4 : 3.6) * (P.crouch > 0.5 ? 0.5 : 1) * (P.aim > 0.5 ? 0.6 : 1) * (inWater ? 0.55 : 1) * Math.max(0.5, P.hp / 100 + 0.3);
+    var speed = (P.sprint ? 6.4 * SET.run : 3.6 * SET.walk) * (P.crouch > 0.5 ? 0.5 : 1) * (P.aim > 0.5 ? 0.6 : 1) * (inWater ? 0.55 : 1) * Math.max(0.5, P.hp / 100 + 0.3);
     P.moving = mag > 0.1;
     if (P.moving) {
       var L = Math.hypot(fx, fz); fx /= L; fz /= L;
@@ -945,8 +967,9 @@ const Z = window.Z;
     // гравитация и земля
     var g = groundAt(P.pos.x, P.pos.z, P.pos.y, R);
     P.vy -= 14 * dt; P.pos.y += P.vy * dt;
-    if (P.pos.y <= g) { if (P.vy < -9) damagePlayer((-P.vy - 9) * 6, 'fall'); P.pos.y = g; P.vy = 0; P.onGround = true; }
+    if (P.pos.y <= g) { if (P.vy < -9 && !P.flyGrace) damagePlayer((-P.vy - 9) * 6, 'fall'); P.flyGrace = false; P.pos.y = g; P.vy = 0; P.onGround = true; }
     else if (P.pos.y - g > 0.25) P.onGround = false;
+    }
     // прицел и камера
     P.aim = Z.lerp(P.aim, P.aiming && !WEAPONS[P.cur].melee ? 1 : 0, Math.min(1, dt * 12));
     camera.fov = Z.lerp(72, 52, P.aim); camera.updateProjectionMatrix();
@@ -1118,6 +1141,16 @@ const Z = window.Z;
   state = 'menu';
   $('#loading').hidden = true;
   $('#btnLoad').hidden = !hasSave();
+  // ---------- настройки управления
+  function syncSettings() {
+    $$('[data-set]').forEach(function (inp) { inp.value = SET[inp.dataset.set]; });
+    $$('[data-out]').forEach(function (o) { o.textContent = '×' + Number(SET[o.dataset.out]).toFixed(2); });
+  }
+  $$('[data-set]').forEach(function (inp) {
+    inp.addEventListener('input', function () { SET[inp.dataset.set] = parseFloat(inp.value); saveSettings(); syncSettings(); });
+  });
+  $$('[data-set-reset]').forEach(function (b) { b.addEventListener('click', function () { SET.walk = 1; SET.run = 1; SET.sens = 1; SET.fly = 1; saveSettings(); syncSettings(); }); });
+  syncSettings();
   $$('#qualitySel button').forEach(function (b) {
     b.classList.toggle('on', b.dataset.q === quality);
     b.addEventListener('click', function () { try { localStorage.setItem(QKEY, b.dataset.q); } catch (e) { /* хранилище недоступно */ } location.reload(); });

@@ -29,7 +29,7 @@
     <div id="anomWarn" class="anom-warn" hidden>⚠ Аномалия рядом</div>
     <div id="prompt" class="prompt" hidden></div>
     <div id="notes" class="notes"></div>
-    <div class="quick">[H] аптечка <b id="qMed">0</b> · [B] бинт <b id="qBand">0</b> · [G] болт · [F] фонарь · [Tab] КПК</div>
+    <div class="quick">[H] аптечка <b id="qMed">0</b> · [B] бинт <b id="qBand">0</b> · [G] болт · [F] фонарь · [Y] полёт · [ [ ] ] скорость · [Tab] КПК</div>
   </div>
 
   <div id="touch" hidden>
@@ -43,6 +43,7 @@
     <button class="tb small" data-act="pda" style="right:16px;top:64px">КПК</button>
     <button class="tb small" data-act="weapon" style="right:16px;top:116px">Оружие</button>
     <button class="tb small" data-act="heal" style="right:16px;top:168px">Аптечка</button>
+    <button class="tb small" data-act="fly" style="right:16px;top:220px">Полёт</button>
   </div>
 
   <!-- КПК -->
@@ -82,9 +83,16 @@
         <button id="btnLoad" class="btn" hidden>Продолжить</button>
       </div>
       <div class="keys">
-        <span><kbd>WASD</kbd> движение</span><span><kbd>Shift</kbd> бег</span><span><kbd>Ctrl</kbd>/<kbd>C</kbd> присесть</span><span><kbd>Пробел</kbd> прыжок</span>
+        <span><kbd>WASD</kbd> движение</span><span><kbd>Shift</kbd> бег, <kbd>[</kbd> <kbd>]</kbd> скорость</span><span><kbd>Ctrl</kbd>/<kbd>C</kbd> присесть</span><span><kbd>Пробел</kbd> прыжок</span>
         <span><kbd>ЛКМ</kbd> огонь</span><span><kbd>ПКМ</kbd> прицел</span><span><kbd>R</kbd> перезарядка</span><span><kbd>1 2</kbd> оружие, <kbd>V</kbd> приклад</span>
-        <span><kbd>E</kbd> взаимодействие</span><span><kbd>G</kbd> бросить болт</span><span><kbd>F</kbd> фонарик</span><span><kbd>Tab</kbd> КПК</span>
+        <span><kbd>E</kbd> взаимодействие</span><span><kbd>G</kbd> бросить болт</span><span><kbd>F</kbd> фонарик, <kbd>Y</kbd> полёт</span><span><kbd>Tab</kbd> КПК</span>
+      </div>
+      <div class="settings">
+        <label>Скорость ходьбы <input type="range" data-set="walk" min="0.4" max="2.5" step="0.05"><output data-out="walk"></output></label>
+        <label>Скорость бега <input type="range" data-set="run" min="0.4" max="2.5" step="0.05"><output data-out="run"></output></label>
+        <label>Скорость полёта <input type="range" data-set="fly" min="0.3" max="4" step="0.1"><output data-out="fly"></output></label>
+        <label>Чувствительность мыши <input type="range" data-set="sens" min="0.3" max="2.5" step="0.05"><output data-out="sens"></output></label>
+        <button class="btn small-btn" data-set-reset>Сбросить</button>
       </div>
       <div class="quality"><span>Графика:</span><span id="qualitySel"><button data-q="low">Низкая</button><button data-q="mid">Средняя</button><button data-q="high">Высокая</button></span></div>
       <a href="../" class="back">← на главную</a> · <a href="CREDITS.md" class="back">Авторы ассетов</a>
@@ -93,6 +101,13 @@
 
   <section id="pause" class="screen" hidden>
     <div class="menu small"><h2>Пауза</h2>
+      <div class="settings">
+        <label>Скорость ходьбы <input type="range" data-set="walk" min="0.4" max="2.5" step="0.05"><output data-out="walk"></output></label>
+        <label>Скорость бега <input type="range" data-set="run" min="0.4" max="2.5" step="0.05"><output data-out="run"></output></label>
+        <label>Скорость полёта <input type="range" data-set="fly" min="0.3" max="4" step="0.1"><output data-out="fly"></output></label>
+        <label>Чувствительность мыши <input type="range" data-set="sens" min="0.3" max="2.5" step="0.05"><output data-out="sens"></output></label>
+        <button class="btn small-btn" data-set-reset>Сбросить</button>
+      </div>
       <div class="row"><button id="btnResume" class="btn primary">Продолжить</button><button id="btnSave" class="btn">Сохранить</button><button id="btnToMenu" class="btn">В меню</button></div>
     </div>
   </section>
