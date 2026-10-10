@@ -124,3 +124,11 @@ body.touch .weapon { bottom: auto; top: 220px; }
 .quality button { font: 700 12px system-ui, sans-serif; background: transparent; color: var(--ink); border: 1px solid var(--line); padding: 4px 10px; cursor: pointer; margin-right: 4px; }
 .quality button.on { background: var(--accent); color: #1a1408; border-color: transparent; }
 #menu { background: linear-gradient(90deg, rgba(10,10,8,.85), rgba(10,10,8,.35) 60%, transparent); place-items: center start; padding-left: max(16px, 6vw); }
+
+.settings { display: grid; gap: 6px; margin: 10px 0 4px; max-width: 420px; font-size: 13px; color: var(--dim); }
+.menu.small .settings { margin: 10px auto; text-align: left; }
+.settings label { display: grid; grid-template-columns: 1fr 140px 46px; align-items: center; gap: 8px; }
+.settings input[type=range] { width: 100%; accent-color: var(--accent); }
+.settings output { color: var(--ink); font: 700 12px ui-monospace, monospace; text-align: right; }
+.small-btn { font-size: 11px; padding: 4px 10px; justify-self: start; }
+.speed-badge { position: absolute; left: 50%; top: 90px; transform: translateX(-50%); background: var(--panel); padding: 4px 12px; border: 1px solid var(--line); font-weight: 700; }
